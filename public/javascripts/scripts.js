@@ -1,8 +1,8 @@
 const cellElelments = document.querySelectorAll("[data-cell]");
-const board = document.querySelectorAll("[data-board]");
+const board = document.querySelector("[data-board]");
 const winnningMessageTextElement = document.querySelector("[data-winning-message-text]");
 const winingMessage = document.querySelector("[data-winning-message]");
-const restarButton = document.querySelector("[data-restar-button]");
+const restartButton = document.querySelector("[data-restar-button]");
 
 let isCircleTurn;
 
@@ -18,12 +18,16 @@ const winnningCombinations = [
 ];
 
 const startGame = () => {
+    isCircleTurn = false;    
+    
     for (const cell of cellElelments) {
+        cell.classList.remove("circle");
+        cell.classList.remove("x");
+        cell.removeEventListener("click", handleClick);
         cell.addEventListener("click", handleClick, {once: true});
     }
-    isCircleTurn = false;
 
-    board.classList.add("x");
+    setBoardHoverClass()
     winingMessage.classList.remove("show-winning-message");
 };
 
@@ -46,21 +50,31 @@ const checkForWin = (currentPlayer) => {
     })
 }
 
+const checkForDraw = () => {
+    return [...cellElelments].every((cell) => {
+       return cell.classList.contains("x") || cell.classList.contains("circle");
+    })
+}
+
 const placeMark = (cell, classToAdd) => {
     cell.classList.add(classToAdd);
 }
 
-const swapTurns = () => {
-    isCircleTurn = !isCircleTurn
-
-    board.classList.remove("circle")
-    board.classList.remove("x")
+const setBoardHoverClass = () => {
+    board.classList.remove("circle");
+    board.classList.remove("x");
 
     if (isCircleTurn) {
         board.classList.add("circle");
     } else {
         board.classList.add("x");
     }
+};
+
+const swapTurns = () => {
+    isCircleTurn = !isCircleTurn
+
+    setBoardHoverClass();
 };
 
 const handleClick = (e) => {
@@ -71,17 +85,20 @@ const handleClick = (e) => {
     placeMark(cell, classToAdd);
 
     // Verificar por vitória
-const isWin = checkForWin(classToAdd);
+    const isWin = checkForWin(classToAdd);
+    
+    // Verificar por empate
+    const isDraw = checkForDraw();
+    
     if (isWin) {
         endGame(false);
+    } else if (isDraw){
+        endGame(true)
     }
-
-    // Verificar por empate
-
     // Mudar símbolo
     swapTurns();
 };
 
 startGame();
 
-restarButton.addEventListener("click", startGame);
+restartButton.addEventListener("click", startGame);
